@@ -1,1 +1,20 @@
+# .gitignore - Ngăn upload file nhạy cảm lên GitHub
 
+# File môi trường chứa thông tin bảo mật
+.env
+.env.local
+.env.production
+
+# Node modules
+node_modules/
+
+# Vercel
+.vercel
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
