@@ -300,6 +300,47 @@
             font-weight: 600;
             word-break: break-word;
             border: 2px dashed #2196f3;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .transfer-content:hover {
+            background: #f0f8ff;
+            border-color: #1976d2;
+        }
+
+        .transfer-content:active {
+            transform: scale(0.98);
+        }
+
+        .copy-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #4caf50;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            display: none;
+            animation: slideInRight 0.3s ease-out;
+            z-index: 1000;
+        }
+
+        .copy-notification.show {
+            display: block;
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
 
         .qr-section {
@@ -328,6 +369,62 @@
             width: 100%;
             height: auto;
             border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .qr-box img:hover {
+            transform: scale(1.05);
+        }
+
+        /* Modal phóng to QR */
+        .qr-modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            animation: fadeIn 0.3s;
+        }
+
+        .qr-modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .qr-modal-content {
+            max-width: 90%;
+            max-height: 90%;
+            animation: zoomIn 0.3s;
+        }
+
+        .qr-modal-close {
+            position: absolute;
+            top: 20px;
+            right: 40px;
+            color: white;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .qr-modal-close:hover {
+            color: #ff4444;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes zoomIn {
+            from { transform: scale(0.5); }
+            to { transform: scale(1); }
         }
 
         .note-section {
@@ -481,15 +578,18 @@
 
             <div class="transfer-section">
                 <h4>📋 NỘI DUNG CHUYỂN KHOẢN CẦN GHI:</h4>
-                <div class="transfer-content" id="transferContent">
+                <div class="transfer-content" id="transferContent" onclick="copyTransferContent()" title="Click để copy">
                     Nguyen Tran Nhat Linh 6T3 T1
                 </div>
+                <p style="margin-top: 10px; color: #666; font-size: 0.9em; text-align: center;">
+                    💡 Click vào nội dung để copy
+                </p>
             </div>
 
             <div class="qr-section">
                 <h4>📱 BẤM VÀO ẢNH QR ĐỂ PHÓNG TO</h4>
                 <div class="qr-box">
-                    <img id="qrImage" src="" alt="QR Code thanh toán">
+                    <img id="qrImage" src="" alt="QR Code thanh toán" onclick="openQRModal()">
                 </div>
                 <p style="margin-top: 15px; color: #666; font-size: 0.95em;">
                     💳 QUÉT MÃ ĐỂ NỘP NHANH QUA NGÂN HÀNG
@@ -500,6 +600,17 @@
                 <h4>📌 GHI CHÚ CHI TIẾT:</h4>
                 <p id="noteContent">Không có ghi chú thêm cho học sinh này.</p>
             </div>
+        </div>
+
+        <!-- Thông báo copy -->
+        <div class="copy-notification" id="copyNotification">
+            ✅ Đã copy nội dung chuyển khoản!
+        </div>
+
+        <!-- Modal phóng to QR -->
+        <div class="qr-modal" id="qrModal" onclick="closeQRModal()">
+            <span class="qr-modal-close" onclick="closeQRModal()">&times;</span>
+            <img class="qr-modal-content" id="qrModalImage">
         </div>
     </div>
 
@@ -513,6 +624,55 @@
         let studentsData = [];
 
         window.addEventListener('load', loadData);
+
+        function copyTransferContent() {
+            const transferContent = document.getElementById('transferContent').textContent;
+            
+            // Copy vào clipboard
+            navigator.clipboard.writeText(transferContent).then(function() {
+                // Hiển thị thông báo
+                const notification = document.getElementById('copyNotification');
+                notification.classList.add('show');
+                
+                // Ẩn sau 2 giây
+                setTimeout(function() {
+                    notification.classList.remove('show');
+                }, 2000);
+            }).catch(function(err) {
+                // Fallback cho trình duyệt cũ
+                const textArea = document.createElement('textarea');
+                textArea.value = transferContent;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                const notification = document.getElementById('copyNotification');
+                notification.classList.add('show');
+                setTimeout(function() {
+                    notification.classList.remove('show');
+                }, 2000);
+            });
+        }
+
+        function openQRModal() {
+            const qrImage = document.getElementById('qrImage');
+            if (qrImage.src) {
+                document.getElementById('qrModalImage').src = qrImage.src;
+                document.getElementById('qrModal').classList.add('show');
+            }
+        }
+
+        function closeQRModal() {
+            document.getElementById('qrModal').classList.remove('show');
+        }
+
+        // Đóng modal khi nhấn ESC
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeQRModal();
+            }
+        });
 
         async function loadData() {
             const loading = document.getElementById('loading');
