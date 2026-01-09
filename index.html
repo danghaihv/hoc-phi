@@ -23,7 +23,6 @@
             margin: 0 auto;
         }
 
-        /* Header */
         .header {
             display: flex;
             align-items: center;
@@ -53,7 +52,6 @@
             font-weight: 700;
         }
 
-        /* Main Card */
         .main-card {
             background: white;
             border-radius: 20px;
@@ -84,7 +82,6 @@
             font-weight: 600;
         }
 
-        /* Search Section */
         .search-section {
             background: white;
             border-radius: 15px;
@@ -179,7 +176,6 @@
             transform: translateY(0);
         }
 
-        /* Result Card */
         .result-card {
             background: white;
             border-radius: 20px;
@@ -377,7 +373,6 @@
             transform: scale(1.05);
         }
 
-        /* Modal phóng to QR */
         .qr-modal {
             display: none;
             position: fixed;
@@ -504,7 +499,6 @@
 </head>
 <body>
     <div class="container">
-        <!-- Header -->
         <div class="header">
             <div class="logo">🎓</div>
             <div class="header-text">
@@ -512,14 +506,12 @@
             </div>
         </div>
 
-        <!-- Main Card -->
         <div class="main-card">
             <div class="main-title">
                 <h2>HỆ THỐNG TRA CỨU</h2>
                 <p>Vui lòng nhập tên học sinh và chọn lớp để tra cứu thông tin học phí <span class="highlight">Tháng 1/2026</span>.</p>
             </div>
 
-            <!-- Search Section -->
             <div class="search-section">
                 <div class="search-header">
                     <div class="search-icon">🔍</div>
@@ -553,7 +545,6 @@
             </div>
         </div>
 
-        <!-- Result Card -->
         <div class="result-card" id="resultCard">
             <div class="result-header">
                 <span class="badge" id="statusBadge">Chưa nộp</span>
@@ -602,12 +593,10 @@
             </div>
         </div>
 
-        <!-- Thông báo copy -->
         <div class="copy-notification" id="copyNotification">
             ✅ Đã copy nội dung chuyển khoản!
         </div>
 
-        <!-- Modal phóng to QR -->
         <div class="qr-modal" id="qrModal" onclick="closeQRModal()">
             <span class="qr-modal-close" onclick="closeQRModal()">&times;</span>
             <img class="qr-modal-content" id="qrModalImage">
@@ -615,12 +604,6 @@
     </div>
 
     <script>
-        // ===== CẤU HÌNH - THAY ĐỔI Ở ĐÂY =====
-        const SHEET_ID = '1bCJL9h1SSShb7l6wysb8_qo7G41FIOGW6xy-Belo1q4';
-        const API_KEY = 'AIzaSyBqzp8Zo4W5hBl_NJVeEiCKMyrWt_s0fk0'; // THAY API KEY CỦA BẠN VÀO ĐÂY
-        const SHEET_NAME = 'Sheet1'; // Tên sheet trong file Google Sheets
-        // ======================================
-
         let studentsData = [];
 
         window.addEventListener('load', loadData);
@@ -628,18 +611,14 @@
         function copyTransferContent() {
             const transferContent = document.getElementById('transferContent').textContent;
             
-            // Copy vào clipboard
             navigator.clipboard.writeText(transferContent).then(function() {
-                // Hiển thị thông báo
                 const notification = document.getElementById('copyNotification');
                 notification.classList.add('show');
                 
-                // Ẩn sau 2 giây
                 setTimeout(function() {
                     notification.classList.remove('show');
                 }, 2000);
             }).catch(function(err) {
-                // Fallback cho trình duyệt cũ
                 const textArea = document.createElement('textarea');
                 textArea.value = transferContent;
                 document.body.appendChild(textArea);
@@ -667,7 +646,6 @@
             document.getElementById('qrModal').classList.remove('show');
         }
 
-        // Đóng modal khi nhấn ESC
         document.addEventListener('keydown', function(event) {
             if (event.key === 'Escape') {
                 closeQRModal();
@@ -679,28 +657,15 @@
             loading.classList.add('show');
 
             try {
-                const response = await fetch(
-                    `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`
-                );
+                // Gọi API endpoint để lấy dữ liệu
+                const response = await fetch('/api/students');
 
                 if (!response.ok) {
                     throw new Error('Không thể tải dữ liệu từ Google Sheets');
                 }
 
                 const data = await response.json();
-                const rows = data.values;
-
-                studentsData = rows.slice(1).map(row => ({
-                    id: row[0] || '',
-                    name: row[1] || '',
-                    class: row[2] || '',
-                    sessions: row[3] || '0',
-                    amount: row[4] || '0',
-                    transferContent: row[5] || '',
-                    note: row[6] || '',
-                    status: row[7] || 'Chưa nộp',
-                    qrCode: row[8] || ''
-                }));
+                studentsData = data;
 
                 populateClassSelect();
                 loading.classList.remove('show');
